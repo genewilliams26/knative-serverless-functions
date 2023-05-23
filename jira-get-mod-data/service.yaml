@@ -1,0 +1,30 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: jira-get-vm-build-data
+  namespace: functions
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/jira-get-vm-build-data:1.0.18
+ 
+          env:
+            - name: vmwareaccount
+              value: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              value: /var/secret/vmwarepassword
+ 
+          volumeMounts:
+            - name: vmwareaccount
+              mountPath: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              mountPath: /var/secret/vmwarepassword
+ 
+      volumes:
+        - name: vmwareaccount
+          secret:
+            secretName: vmwareaccount
+        - name: vmwarepassword
+          secret:
+            secretName: vmwarepassword

@@ -1,0 +1,61 @@
+--- 
+all: 
+  vars:
+    dev_ou: OU=infrastructure,DC=corpgroups,DC=org.dev,DC=com
+    test_ou: OU=infrastructure,DC=corpgroups,DC=org.test,DC=com
+    prod_ou: OU=infrastructure,DC=corpgroups,DC=org,DC=com
+    jira_user: scorchprod
+    jira_pass: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              37666564343735303663343939653036643336343862366162646134663430623265376133326233
+              3966646565333866633336396138613465663534373863340a393632656430373731373165316536
+              66646538386332613839383235623533366630333439313365343132666564353065626630633964
+              6263383762613739640a346665653061633139313738356431323332636232343931356330356339
+              3130
+  children: 
+    ics_domain_controller: 
+      vars:
+        ansible_connection: winrm
+        ansible_port: 5985
+        ansible_winrm_transport: kerberos
+        ansible_winrm_scheme: http
+        ansible_winrm_server_cert_validation: ignore
+        ansible_winrm_kerberos_delegation: true
+      children: 
+        dev: 
+          vars:
+            ansible_user: devUser@<Organization>DEV.COM
+            ansible_password: devSecret
+          hosts: 
+            <VM>0001.org.dev.com:
+            <VM>0005.org.dev.com:
+        test: 
+          vars:
+            ansible_user: testUser@<Organization>TEST.COM
+            ansible_password: testSecret
+          hosts: 
+            <VM>0001.org.test.com:
+            <VM>0002.org.test.com:
+            <VM>0022a.org.test.com:
+            <VM>0022b.org.test.com:
+        prod: 
+          vars:
+            ansible_user: scorchprod@<Organization>.COM
+            ansible_password: !vault |
+                      $ANSIBLE_VAULT;1.1;AES256
+                      37666564343735303663343939653036643336343862366162646134663430623265376133326233
+                      3966646565333866633336396138613465663534373863340a393632656430373731373165316536
+                      66646538386332613839383235623533366630333439313365343132666564353065626630633964
+                      6263383762613739640a346665653061633139313738356431323332636232343931356330356339
+                      3130
+          children: 
+            bastrop: 
+              hosts: 
+                svw0266.<domain-name>:
+                svw0275.<domain-name>:
+                svw0276.<domain-name>:
+            taylor: 
+              hosts: 
+                svw0267.<domain-name>:
+                svw0273.<domain-name>:
+                svw0274.<domain-name>:

@@ -1,0 +1,43 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: cmdb-get-owners
+  namespace: functions
+spec:
+  template:
+    metadata:
+      annotations:
+        # the minimum number of pods to scale down to
+        autoscaling.knative.dev/minScale: "1"
+        # Target in-flight-requests per pod.
+        autoscaling.knative.dev/target: "1"
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/cmdb-get-owners:1.0.29
+
+          env:
+            - name: cmdbapiaccount
+              value: /var/secret/cmdbapiaccount
+            - name: cmdbapipw
+              value: /var/secret/cmdbapipw
+            - name: clusterenv
+              value: /var/secret/clusterenv
+ 
+          volumeMounts:
+            - name: cmdbapiaccount
+              mountPath: /var/secret/cmdbapiaccount
+            - name: cmdbapipw
+              mountPath: /var/secret/cmdbapipw
+            - name: clusterenv
+              mountPath: /var/secret/clusterenv
+ 
+      volumes:
+        - name: cmdbapiaccount
+          secret:
+            secretName: cmdbapiaccount
+        - name: cmdbapipw
+          secret:
+            secretName: cmdbapipw
+        - name: clusterenv
+          secret:
+            secretName: clusterenv

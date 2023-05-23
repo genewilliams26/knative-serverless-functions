@@ -1,0 +1,44 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: twistlock-defenders-monitor
+  namespace: functions
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/twistlock-defenders-monitor:1.0.19
+ 
+          env:
+            - name: tladminaccount
+              value: /var/secret/tladminaccount
+            - name: tladminpassword
+              value: /var/secret/tladminpassword
+            - name: clustername
+              value: /var/secret/clustername
+            - name: clusterenv
+              value: /var/secret/clusterenv
+ 
+          volumeMounts:
+            - name: tladminaccount
+              mountPath: /var/secret/tladminaccount
+            - name: tladminpassword
+              mountPath: /var/secret/tladminpassword
+            - name: clustername
+              mountPath: /var/secret/clustername
+            - name: clusterenv
+              mountPath: /var/secret/clusterenv
+
+      volumes:
+        - name: tladminaccount
+          secret:
+            secretName: tladminaccount
+        - name: tladminpassword
+          secret:
+            secretName: tladminpassword
+        - name: clustername
+          secret:
+            secretName: clustername
+        - name: clusterenv
+          secret:
+            secretName: clusterenv

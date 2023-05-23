@@ -1,0 +1,37 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: decom-ad
+  namespace: functions
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/decom-ad:1.0.1
+ 
+          env:
+            - name: vmwareaccount
+              value: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              value: /var/secret/vmwarepassword
+            - name: clusterenv
+              value: /var/secret/clusterenv
+ 
+          volumeMounts:
+            - name: vmwareaccount
+              mountPath: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              mountPath: /var/secret/vmwarepassword
+            - name: clusterenv
+              mountPath: /var/secret/clusterenv
+ 
+      volumes:
+        - name: vmwareaccount
+          secret:
+            secretName: vmwareaccount
+        - name: vmwarepassword
+          secret:
+            secretName: vmwarepassword
+        - name: clusterenv
+          secret:
+            secretName: clusterenv

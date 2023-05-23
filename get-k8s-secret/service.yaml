@@ -1,0 +1,31 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: get-k8s-secret
+  namespace: functions
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/get-k8s-secret:1.0.7
+ 
+          env:
+            - name: sshpassword
+              value: /var/secret/sshpassword
+            - name: vmwarepassword
+              value: /var/secret/vmwarepassword
+ 
+          volumeMounts:
+            - name: sshpassword
+              mountPath: /var/secret/sshpassword
+            - name: vmwarepassword
+              mountPath: /var/secret/vmwarepassword
+ 
+      volumes:
+        - name: sshpassword
+          secret:
+            secretName: sshpassword
+        - name: vmwarepassword
+          secret:
+            secretName: vmwarepassword
+

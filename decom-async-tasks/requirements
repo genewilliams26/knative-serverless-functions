@@ -1,0 +1,4 @@
+paramiko
+gunicorn
+Flask
+requests

@@ -1,0 +1,62 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: jira-get-vm-build-data
+  namespace: functions
+spec:
+  template:
+    metadata:
+      annotations:
+#keep one running for scanning and quick response time
+        autoscaling.knative.dev/min-scale: "1"
+#Max at 2 x 50 rps setting (that would be a bunch of machine builds)
+        autoscaling.knative.dev/max-scale: "2"
+#
+        autoscaling.knative.dev/metric: "rps"
+#
+        autoscaling.knative.dev/target: "50"
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/jira-get-vm-build-data:1.0.101
+#starting point for resources. Adjust down or up as we monitor in production.
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 2
+          readinessProbe:
+            httpGet:
+              path: /health
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 2
+          env:
+            - name: vmwareaccount
+              value: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              value: /var/secret/vmwarepassword
+ 
+          volumeMounts:
+            - name: vmwareaccount
+              mountPath: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              mountPath: /var/secret/vmwarepassword
+ 
+      volumes:
+        - name: vmwareaccount
+          secret:
+            secretName: vmwareaccount
+        - name: vmwarepassword
+          secret:
+            secretName: vmwarepassword

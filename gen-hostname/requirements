@@ -1,0 +1,7 @@
+paramiko
+gunicorn
+Flask
+cryptography
+pyVmomi
+pyVim
+requests

@@ -1,0 +1,48 @@
+pipeline {
+    agent none
+    parameters {
+        string(name: "CLUSTER_NAME", defaultValue: "<k8s-cluster>.<domain-name>", description: "cluster to deploy function to")
+    }
+    stages {
+        stage('Build Function Container') {
+            agent {
+                kubernetes {yamlFile 'build-environment.yaml'}
+            }
+            environment {
+                ARTIFACT_REPOSITORY_CREDS = credentials('JENKINS_SERVICE_ACCOUNT')
+                IMAGE_NAME = 'docker.repo.<domain-name>/org/ia/faas/nim-get-images'
+            }
+            steps {
+                container('buildah') {
+                    sh '''
+                        hadolint --no-color --no-fail --format json --require-label maintainer --require-label projectId Dockerfile >> hadolint-results.json
+                        buildah bud --format=docker --pull-always --no-cache --creds ${ARTIFACT_REPOSITORY_CREDS_USR}:${ARTIFACT_REPOSITORY_CREDS_PSW} --tag ${IMAGE_NAME}:1.0.1 --tag ${IMAGE_NAME}:${GIT_COMMIT} .
+                        buildah push --creds ${ARTIFACT_REPOSITORY_CREDS_USR}:${ARTIFACT_REPOSITORY_CREDS_PSW} ${IMAGE_NAME}:1.0.1
+                        buildah push --creds ${ARTIFACT_REPOSITORY_CREDS_USR}:${ARTIFACT_REPOSITORY_CREDS_PSW} ${IMAGE_NAME}:${GIT_COMMIT}
+                       '''
+                }
+            }
+        }
+        stage('Deploy Function') {
+            agent {
+                kubernetes {yamlFile 'ocbuild-environment.yaml'}
+            }
+            steps {
+                container('clientbase') {
+                    sh """
+                        export KUBECONFIG=/tmp/.kube/config
+                        oc login --insecure-skip-tls-verify https://api.${params.CLUSTER_NAME}:6443 -u=<User> -p=<password>
+                        oc apply -f ./service.yml
+                    """
+                }
+            }
+        }
+        stage('Wait for Test Deployment') {
+            agent any
+            steps {
+                echo 'Waiting 20 seconds'
+                sleep 20
+            }
+        }
+    }
+}

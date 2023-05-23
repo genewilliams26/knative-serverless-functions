@@ -1,0 +1,10 @@
+paramiko
+git
+jira
+json
+datetime
+urllib3
+gunicorn
+Flask
+cryptography
+requests

@@ -1,0 +1,6 @@
+paramiko
+gunicorn
+Flask
+cryptography
+requests
+asyncio

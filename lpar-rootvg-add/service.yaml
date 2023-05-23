@@ -1,0 +1,30 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: lpar-rootvg-add
+  namespace: functions
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/lpar-rootvg-add:1.0.28
+ 
+          env:
+            - name: sshaccount
+              value: /var/secret/sshaccount
+            - name: sshpassword
+              value: /var/secret/sshpassword
+
+          volumeMounts:
+            - name: sshaccount
+              mountPath: /var/secret/sshaccount
+            - name: sshpassword
+              mountPath: /var/secret/sshpassword
+
+      volumes:
+        - name: sshaccount
+          secret:
+            secretName: sshaccount
+        - name: sshpassword
+          secret:
+            secretName: sshpassword

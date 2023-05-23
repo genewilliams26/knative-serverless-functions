@@ -1,0 +1,30 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: vmware-get-portgroup
+  namespace: functions
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.repo.<domain-name>/org/ia/faas/vmware-get-portgroup:1.0.8
+ 
+          env:
+            - name: vmwareaccount
+              value: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              value: /var/secret/vmwarepassword
+ 
+          volumeMounts:
+            - name: vmwareaccount
+              mountPath: /var/secret/vmwareaccount
+            - name: vmwarepassword
+              mountPath: /var/secret/vmwarepassword
+ 
+      volumes:
+        - name: vmwareaccount
+          secret:
+            secretName: vmwareaccount
+        - name: vmwarepassword
+          secret:
+            secretName: vmwarepassword

@@ -1,0 +1,31 @@
+# v1 mvp
+# v2 improvement: acquire UUID to avoid problems with multiple hostname matches.
+---
+- hosts: localhost
+  become: no
+  gather_facts: no
+  connection: local
+
+  tasks: 
+    - name: Shutdown virtual machine
+      vmware_guest_powerstate:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        state: powered-off
+      delegate_to: localhost
+      register: deploy
+
+    - name: Delete a virtual machine
+      vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        name_match: last
+        state: absent
+      delegate_to: localhost
+
